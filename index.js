@@ -3,13 +3,13 @@ const uuidv4 = require('uuid/v4');
 const uuid = uuidv4().split('-')[0];
 const username= `bot-${uuid}`;
 
-//const server = process.env.VCAP_SERVICES['user-provided']
+const host = process.env.MINECRAFT_SERVER_HOST
+const port = process.env.MINECRAFT_SERVER_PORT
 
 var bot = mineflayer.createBot({
-  username,
-  host: "minecraftserver.tcp.trial.cap.suse.dev", // optional
-  port: 20003,       // optional
-  version: false                 // false corresponds to auto version detection (that's the default), put for example "1.8.8" if you need a specific version
+  username,//shost,
+  port,
+  version: false
 })
 
 bot.on('error', err => console.log(err))
