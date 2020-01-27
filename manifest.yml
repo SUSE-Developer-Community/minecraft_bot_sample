@@ -6,3 +6,6 @@ applications:
   health-check-type: process
   memory: 256M
   disk_quota: 384M
+  env:
+    MINECRAFT_SERVER_HOST: minecraftserver
+    MINECRAFT_SERVER_PORT: 20003
