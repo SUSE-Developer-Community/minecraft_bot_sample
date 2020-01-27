@@ -1,0 +1,8 @@
+applications:
+- name: MinecraftBotTest 
+  buildpack: nodejs_buildpack
+  command: node index.js
+  no-route: true
+  health-check-type: process
+  memory: 256M
+  disk_quota: 384M
