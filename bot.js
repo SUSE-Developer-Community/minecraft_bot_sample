@@ -38,7 +38,7 @@ module.exports = ({bot}) => {
   
   
   bot.lookAt(entity.position, true)
-  if (bot.setControlState) bot.setControlState('forward', true)
+  if (bot.setControlState) bot.setControlState('forward', dist > 5)
   if (bot.setControlState) bot.setControlState('jump', true)
-  bot.attack(entity, true)
+  //bot.attack(entity, true)
 }
