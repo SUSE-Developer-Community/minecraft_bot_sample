@@ -23,7 +23,7 @@ module.exports = (bot) => ({
                 }
                 return false
             },
-            maxDistance: 50
+            maxDistance: 32
         })
     },
     placementRange: 4,

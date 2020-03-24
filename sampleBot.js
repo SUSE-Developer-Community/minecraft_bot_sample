@@ -92,6 +92,25 @@ module.exports.init = ({bot}, wrapper, {mcData}, {Vec3}) => {
     });
 }
 
+function placeOnTargetBlock(bot, itemName, Vec3) {
+    let itemToPlace = bot.inventory.items().find((item) => (item.name === itemName))
+    bot.equip(itemToPlace, 'hand', (e) => {
+        if (e) {
+            console.log(e)
+        } else {
+            let target = targetBlock
+            bot.placeBlock(target, new Vec3(0, 1, 0), (e) => {
+                if (e) {
+                    console.log(e)
+                } else {
+                    console.log(`${bot.username}|placed ${itemToPlace.name} at: ${target.position}`)
+                }
+            })
+            targetBlock = null;
+        }
+    })
+}
+
 // Executed repeatedly every few seconds
 module.exports.loop = ({bot}, wrapper, {mcData}, {Vec3}) => {
     console.log(`${bot.username}|Start of Bot Loop`)
@@ -119,22 +138,21 @@ module.exports.loop = ({bot}, wrapper, {mcData}, {Vec3}) => {
         }
 
         if (!moving) { // place block at target
-            let grass = bot.inventory.items().find((item) => (item.name === 'grass'))
-            bot.equip(grass, 'hand', (e) => {
-                if (e) {
-                    console.log(e)
-                } else {
-                    let target = targetBlock
-                    bot.placeBlock(target, new Vec3(0, 1, 0), (e) => {
-                        if (e) {
-                            console.log(e)
-                        } else {
-                            console.log(`${bot.username}|placed grass at: ${target.position}`)
-                        }
-                    })
-                    targetBlock = null;
-                }
-            })
+            // console.log(mcData.blocksByName.grass)
+            let itemName
+
+            if(targetBlock.name === mcData.blocksByName.sandstone.name) {
+                console.log(`${bot.username}|Equiping ${mcData.blocksByName.grass.name}`)
+                itemName = mcData.blocksByName.grass.name;
+            } else if(targetBlock.name === mcData.blocksByName.grass.name) {
+                console.log(`${bot.username}|Equiping ${mcData.blocksByName.grass.name}`)
+                itemName = mcData.blocksByName.sapling.name;
+            } else if(targetBlock.name === mcData.blocksByName.sapling.name) {
+                console.log(`${bot.username}|Equiping ${mcData.blocksByName.grass.name}`)
+                itemName = mcData.itemsByName.dye.name; // TODO, need to equip variation 15
+            }
+            
+            placeOnTargetBlock(bot, itemName, Vec3);
         }
     }
 
@@ -161,11 +179,16 @@ module.exports.loop = ({bot}, wrapper, {mcData}, {Vec3}) => {
     //     })
     // }
     if (!moving && !targetBlock) {
-        // far from target
-        console.log(`${bot.username}|searching for place for dirt...`)
-        targetBlock = wrapper.findNearestBlock(mcData.blocksByName.sandstone.id)
+        targetBlock = wrapper.findNearestBlock(mcData.blocksByName.grass.id)
+        if(!targetBlock){
+            // far from target
+            console.log(`${bot.username}|No dirt found, searching for place for dirt...`)
+            targetBlock = wrapper.findNearestBlock(mcData.blocksByName.sandstone.id)
+        }
         if (targetBlock) {
             console.log(`${bot.username}|Found new Target Block: ${targetBlock.displayName}@${targetBlock.position}`)
+        } else {
+            // TODO move someplace random or search with a larger range
         }
         // moveToPlaceBlock(bot, targetBlock, Vec3); // TODO, do we need to stop on arrival
         // console.log(`${bot.username}|target for dirt: ${targetBlock.position}`)
