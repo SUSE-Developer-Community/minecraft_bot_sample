@@ -113,7 +113,7 @@ module.exports.loop = ({bot}, wrapper, {mcData}, {Vec3}) => {
         console.log(`${bot.username}|distanceToTarget: ${distanceToTarget}`)
         if (!moving && (distanceToTarget > wrapper.placementRange || distanceToTarget < 1.5)) {
             if(distanceToTarget < 1) console.log(`${bot.username}|Need to back up. Dist: ${distanceToTarget}`)
-            bot.navigate.to(targetBlock.position.offset(1, 1, 1));
+            bot.navigate.to(targetBlock.position.offset(1, 1, 2));
             console.log(`${bot.username}|Moving closer to target block: ${targetBlock.position}`)
             moving = true;
         }
@@ -124,14 +124,15 @@ module.exports.loop = ({bot}, wrapper, {mcData}, {Vec3}) => {
                 if (e) {
                     console.log(e)
                 } else {
-                    bot.placeBlock(targetBlock, new Vec3(0, 1, 0), (e) => {
+                    let target = targetBlock
+                    bot.placeBlock(target, new Vec3(0, 1, 0), (e) => {
                         if (e) {
                             console.log(e)
                         } else {
-                            console.log(`${bot.username}|placed grass at: ${targetBlock.position}`)
-                            targetBlock = null
+                            console.log(`${bot.username}|placed grass at: ${target.position}`)
                         }
                     })
+                    targetBlock = null;
                 }
             })
         }
