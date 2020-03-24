@@ -70,6 +70,8 @@ module.exports.init = ({bot}, wrapper, {mcData}, {Vec3}) => {
     bot.navigate.on('arrived', function () {
         moving = false;
         bot.chat("I have arrived")
+        console.log(`${bot.username}|Arrived at: ${bot.entity.position}   Target block: ${targetBlock.position}`)
+
     });
     bot.navigate.on('interrupted', function () {
         moving = false;
@@ -92,40 +94,47 @@ module.exports.init = ({bot}, wrapper, {mcData}, {Vec3}) => {
 
 // Executed repeatedly every few seconds
 module.exports.loop = ({bot}, wrapper, {mcData}, {Vec3}) => {
-    console.log('Start of Bot Loop')
+    console.log(`${bot.username}|Start of Bot Loop`)
+    console.log(`${bot.username}|moving: ${moving}`)
+    console.log(`${bot.username}|position: ${bot.entity.position}`)
     // Sample usage
     // printInventory(bot);
-    
+
     // Tree planting algo
     // find sandstone
     // findSandstone()
     // if not found, move in a random direction and try again
     
-    // if target is out of reach, move closer
-    if(!moving && targetBlock && wrapper.distance(bot.entity.position, targetBlock.position) > wrapper.placementRange){
-        bot.navigate.to(targetBlock.position);
-        console.log(`${bot.username}|Moving closer to target block: ${targetBlock.position}`)
-        moving = true;
-    }  
-    
-    // TODO: Test if target block is within placement distance.
-    
-
     if (targetBlock) {
-        let grass = bot.inventory.items().find((item) => (item.name === 'grass'))
-        bot.equip(grass, 'hand', (e) => {
-            if (e) {
-                console.log(e)
-            } else {
-                bot.placeBlock(targetBlock, new Vec3(0, 1, 0), (e) => {
-                    if (e) {
-                        console.log(e)
-                    } else {
-                        console.log(`${bot.username}|placed grass at: ${targetBlock.position}`)
-                    }
-                })
-            }
-        })
+        // TODO: Test if target block is within placement distance.
+        // if target is out of reach, move closer
+        // if target is too close, back up
+        let distanceToTarget = wrapper.distance(bot.entity.position, targetBlock.position)
+        console.log(`${bot.username}|distanceToTarget: ${distanceToTarget}`)
+        if (!moving && (distanceToTarget > wrapper.placementRange || distanceToTarget < 1.5)) {
+            if(distanceToTarget < 1) console.log(`${bot.username}|Need to back up. Dist: ${distanceToTarget}`)
+            bot.navigate.to(targetBlock.position.offset(1, 1, 1));
+            console.log(`${bot.username}|Moving closer to target block: ${targetBlock.position}`)
+            moving = true;
+        }
+
+        if (!moving) { // place block at target
+            let grass = bot.inventory.items().find((item) => (item.name === 'grass'))
+            bot.equip(grass, 'hand', (e) => {
+                if (e) {
+                    console.log(e)
+                } else {
+                    bot.placeBlock(targetBlock, new Vec3(0, 1, 0), (e) => {
+                        if (e) {
+                            console.log(e)
+                        } else {
+                            console.log(`${bot.username}|placed grass at: ${targetBlock.position}`)
+                            targetBlock = null
+                        }
+                    })
+                }
+            })
+        }
     }
 
     // if (targetBlock) {
@@ -150,24 +159,23 @@ module.exports.loop = ({bot}, wrapper, {mcData}, {Vec3}) => {
     //         });
     //     })
     // }
-    console.log(`${bot.username}|moving: ${moving}`)
-    if (!moving) {
+    if (!moving && !targetBlock) {
         // far from target
         console.log(`${bot.username}|searching for place for dirt...`)
-        targetBlock = wrapper.findNearestBlock(mcData.blocksByName.sandstone.id) //TODO, switch back to sandstone
-        if(targetBlock) {
-            console.log("Target Block: ", targetBlock.displayName, "@", targetBlock.position)
+        targetBlock = wrapper.findNearestBlock(mcData.blocksByName.sandstone.id)
+        if (targetBlock) {
+            console.log(`${bot.username}|Found new Target Block: ${targetBlock.displayName}@${targetBlock.position}`)
         }
         // moveToPlaceBlock(bot, targetBlock, Vec3); // TODO, do we need to stop on arrival
         // console.log(`${bot.username}|target for dirt: ${targetBlock.position}`)
         // close to target
     } else if (moving) {
-        console.log('Moving')
+        console.log(`${bot.username}|Moving to: ${targetBlock.position} from ${bot.entity.position}`)
     }
-    
-    function printInventory (bot){
+
+    function printInventory(bot) {
         console.log(`${bot.username}| Inventory:`)
-        Object.keys(bot.inventory.items()).forEach(function (key){
+        Object.keys(bot.inventory.items()).forEach(function (key) {
             // Grass Block|grass|2 0: 64
             let item = bot.inventory.items()[key];
             console.log(`${item.displayName}|${item.name}|${item.type} ${item.metadata}: ${item.count}`)
