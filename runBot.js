@@ -7,6 +7,7 @@ const uuidv4 = require('uuid/v4');
 const uuid = uuidv4().split('-')[0];
 const host = 'localhost';
 const port = 25565;
+let exit = false;
 
 if (process.argv.length < 3 || process.argv.length > 4) {
     console.log('Usage : node localApp.js <script name>]')
@@ -27,7 +28,9 @@ console.log("Bot.majorVersion ================= " + bot.majorVersion)
 
 bot.on('error', err => console.log(err))
 bot.on('respawn', () => {
-    console.log('respawn')
+    console.log(bot.username + ' was killed');
+    exit = true;
+    bot.quit();
 })
 
 let mcData = require('minecraft-data')("1.12")
@@ -54,10 +57,16 @@ bot.once('login', function () {
     // playerBot.wrapper = wrapper;
     
     playerBot.init({bot}, wrapper, {mcData}, {Vec3});
-    setInterval(() => {
-        playerBot.loop({
-            bot,
-            getPlayers: bot.findPlayers
-        }, wrapper, {mcData}, {Vec3})
-    }, 3000)
+    {
+        let refreshId = setInterval(() => {
+            playerBot.loop({
+                bot,
+                getPlayers: bot.findPlayers
+            }, wrapper, {mcData}, {Vec3})
+        }, 3000)
+        if(exit){
+            console.log(`${bot.username}|Clearing Interval - Quitting`)
+            clearInterval(refreshId);
+        }
+    }
 })
