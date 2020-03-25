@@ -33,6 +33,28 @@ bot.on('respawn', () => {
     bot.quit();
 })
 
+bot.on('blockUpdate', (oldBlock,newBlock) =>{
+    console.log(oldBlock)
+    console.log(newBlock)
+    console.log(`Block update: O:${oldBlock.name}[${oldBlock.type}] N:${newBlock.name}[${newBlock.type}]`)
+    // request an update to the current map tile if dirt, grass, 
+    if(oldBlock && oldBlock.id == mcData.blocksByName.air){
+        switch(newBlock.type){
+            case mcData.blocksByName.dirt.id:
+            case mcData.blocksByName.grass.id:
+            case mcData.blocksByName.sappling.id:
+                bot.chat("/dynmap render")
+                break
+            case mcData.blocksByName.log.id:
+            case mcData.blocksByName.leaves.id:
+                bot.chat(`/dynmap radiusrender world ${newBlock.position.x} ${newBlock.position.z} 10`)
+                break
+            default:
+                // ignore other block changes
+        }
+    }
+})
+
 let mcData = require('minecraft-data')("1.12")
 console.log('mcData postinject: ' + mcData)
 
