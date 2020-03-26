@@ -5,7 +5,7 @@ lays grass
 equips a sapling
 plants a sapling on grass
 equips bonemeal
-fertalizes sapling until growth (or out of bonemeal)
+fertalizes sapling until growth (or out of bonemeal) // TODO
 finds a place to plant until out of saplings
 finds a place to lay grass until out of saplings or grass
 Note: May send chat "resupply" to get more of everything from Geeko
@@ -30,15 +30,6 @@ function followSpeaker(bot, chatuser) {
     state.target = bot.players[chatuser].entity;
     if (state.target) {
         bot.navigate.to(state.target.position);
-    }
-}
-
-function moveToPlaceBlock(bot, block, Vec3) {
-    state.target = block;
-    if (state.target) {
-        // Offset to keep destination above ground
-        moving = true;
-        bot.navigate.to(state.target.position.offset(2, 1, 2));
     }
 }
 
@@ -92,7 +83,7 @@ module.exports.init = ({bot}, wrapper, {mcData}, {Vec3}) => {
     });
 }
 
-function placeOnTargetBlock(bot, itemName, Vec3) {
+function placeOnTopOfTargetBlock(bot, itemName) {
     let itemToPlace = bot.inventory.items().find((item) => (item.name === itemName))
     bot.equip(itemToPlace, 'hand', (e) => {
         if (e) {
@@ -140,19 +131,24 @@ module.exports.loop = ({bot}, wrapper, {mcData}, {Vec3}) => {
         if (!moving) { // place block at target
             // console.log(mcData.blocksByName.grass)
             let itemName
-
-            if(targetBlock.name === mcData.blocksByName.sandstone.name) {
-                console.log(`${bot.username}|Equiping ${mcData.blocksByName.grass.name}`)
-                itemName = mcData.blocksByName.grass.name;
-            } else if(targetBlock.name === mcData.blocksByName.grass.name) {
-                console.log(`${bot.username}|Equiping ${mcData.blocksByName.grass.name}`)
-                itemName = mcData.blocksByName.sapling.name;
-            } else if(targetBlock.name === mcData.blocksByName.sapling.name) {
-                console.log(`${bot.username}|Equiping ${mcData.blocksByName.grass.name}`)
-                itemName = mcData.itemsByName.dye.name; // TODO, need to equip variation 15
-            }
             
-            placeOnTargetBlock(bot, itemName, Vec3);
+            switch(targetBlock.type){
+                case mcData.blocksByName.sandstone.id:
+                case mcData.blocksByName.sand.id:
+                    itemName = mcData.blocksByName.grass.name;
+                    break;
+                case mcData.blocksByName.grass.id:
+                    itemName = mcData.blocksByName.sapling.name;
+                    break;
+                case mcData.blocksByName.sapling.id:
+                    itemName = mcData.itemsByName.dye.name; // TODO, need to equip variation 15
+                    break;
+                default:
+                    console.log('Unhandled targetBlock: ', targetBlock.displayName)
+            }
+            if(itemName) {
+                placeOnTopOfTargetBlock(bot, itemName);
+            }
         }
     }
 
@@ -190,8 +186,7 @@ module.exports.loop = ({bot}, wrapper, {mcData}, {Vec3}) => {
         } else {
             // TODO move someplace random or search with a larger range
         }
-        // moveToPlaceBlock(bot, targetBlock, Vec3); // TODO, do we need to stop on arrival
-        // console.log(`${bot.username}|target for dirt: ${targetBlock.position}`)
+
         // close to target
     } else if (moving) {
         console.log(`${bot.username}|Moving to: ${targetBlock.position} from ${bot.entity.position}`)
