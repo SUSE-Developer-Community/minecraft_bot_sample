@@ -34,9 +34,6 @@ bot.on('respawn', () => {
 })
 
 bot.on('blockUpdate', (oldBlock,newBlock) =>{
-    console.log(oldBlock)
-    console.log(newBlock)
-    console.log(`Block update: O:${oldBlock.name}[${oldBlock.type}] N:${newBlock.name}[${newBlock.type}]`)
     // request an update to the current map tile if dirt, grass, 
     if(oldBlock && oldBlock.id == mcData.blocksByName.air){
         switch(newBlock.type){
