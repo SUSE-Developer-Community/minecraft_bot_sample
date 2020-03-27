@@ -82,7 +82,7 @@ bot.once('login', function () {
                 bot,
                 getPlayers: bot.findPlayers
             }, wrapper, {mcData}, {Vec3})
-        }, 1000)
+        }, 2000)
         if(exit){
             console.log(`${bot.username}|Clearing Interval - Quitting`)
             clearInterval(refreshId);
