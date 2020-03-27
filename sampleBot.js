@@ -5,7 +5,7 @@ lays grass
 equips a sapling
 plants a sapling on grass
 equips bonemeal
-fertalizes sapling until growth (or out of bonemeal) // TODO
+fertalizes sapling until growth (or out of bonemeal)
 finds a place to plant until out of saplings
 finds a place to lay grass until out of saplings or grass
 Note: May send chat "resupply" to get more of everything from Geeko
@@ -54,7 +54,10 @@ module.exports.init = ({bot}, wrapper, {mcData}, {Vec3}) => {
         bot.chat("found path. I can get there in " + path.length + " moves.")
     });
     bot.navigate.on('cannotFind', function (closestPath) {
-        moving = true;
+        // TODO: The bot has problems when the desired destination is inside another block due to the offset (the offset keeps the bot from standing where it needs to place the block)
+        // moving = true;
+        moving = false;
+        targetBlock = null;
         bot.chat("unable to find path. getting as close as possible")
         bot.navigate.walk(closestPath)
     });
@@ -79,11 +82,15 @@ module.exports.init = ({bot}, wrapper, {mcData}, {Vec3}) => {
             followSpeaker(bot, chatuser);
         } else if (message === 'stop') {
             stopMoving(bot);
+        } else if (message === 'reset') {
+            targetBlock = null;
+            moving = false;
+            stopMoving(bot)
         }
     });
 }
 
-function placeOnTopOfTargetBlock(bot, itemName) {
+function placeOnTopOfTargetBlock(bot, itemName, Vec3) {
     let itemToPlace = bot.inventory.items().find((item) => (item.name === itemName))
     bot.equip(itemToPlace, 'hand', (e) => {
         if (e) {
@@ -123,8 +130,8 @@ module.exports.loop = ({bot}, wrapper, {mcData}, {Vec3}) => {
         console.log(`${bot.username}|distanceToTarget: ${distanceToTarget}`)
         if (!moving && (distanceToTarget > wrapper.placementRange || distanceToTarget < 1.5)) {
             if(distanceToTarget < 1) console.log(`${bot.username}|Need to back up. Dist: ${distanceToTarget}`)
-            bot.navigate.to(targetBlock.position.offset(1, 1, 2));
             console.log(`${bot.username}|Moving closer to target block: ${targetBlock.position}`)
+            bot.navigate.to(targetBlock.position.offset(0, 1, 2));
             moving = true;
         }
 
@@ -147,7 +154,7 @@ module.exports.loop = ({bot}, wrapper, {mcData}, {Vec3}) => {
                     console.log('Unhandled targetBlock: ', targetBlock.displayName)
             }
             if(itemName) {
-                placeOnTopOfTargetBlock(bot, itemName);
+                placeOnTopOfTargetBlock(bot, itemName, Vec3);
             }
         }
     }
@@ -189,7 +196,7 @@ module.exports.loop = ({bot}, wrapper, {mcData}, {Vec3}) => {
 
         // close to target
     } else if (moving) {
-        console.log(`${bot.username}|Moving to: ${targetBlock.position} from ${bot.entity.position}`)
+        if(targetBlock) console.log(`${bot.username}|Moving to: ${targetBlock.position} from ${bot.entity.position}`)
     }
 
     function printInventory(bot) {
