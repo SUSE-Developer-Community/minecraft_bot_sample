@@ -16,8 +16,8 @@ const Vec3 = require('vec3')
 const navigatePlugin = require('mineflayer-navigate')(mineflayer)
 
 const uuid = uuidv4().split('-')[0]
-let exit = false
-let interval = 2000
+let interval = 5000
+let loop = null
 
 username = `bot_${uuid}`.substr(0, 16) // trim to 16 characters, minecraft limit
 
@@ -34,11 +34,32 @@ const wrapper = require('./wrapper.js')(bot, mcData)
 
 console.log("Bot.majorVersion ================= " + bot.majorVersion)
 
-bot.on('error', err => console.log(err))
+bot.on('error', err => console.error(err))
+
+bot.on('spawn',()=>{
+  console.log("Spawn")
+})
+
+bot.on('game',()=>{
+  console.log("Game")
+})
+
+bot.on('connect',()=>{
+  console.error("Connected")
+})
+bot.on('end',()=>{
+  console.error("Disconnected")
+  process.exit(0)
+})
+
+bot.on('entityEquip',(entity)=>{
+  console.log("entityEquip", entity)
+})
+
 bot.on('respawn', () => {
     console.log(bot.username + ' was killed :(');
-    exit = true;
-    bot.quit();
+    wrapper.sendChat(`${TEAM_PREFIX}${playerBot.team}${TEAM_SUFFIX}`)
+    restartLoop()
 })
 
 bot.on('blockUpdate', (oldBlock,newBlock) =>{
@@ -59,23 +80,24 @@ bot.on('blockUpdate', (oldBlock,newBlock) =>{
         }
     }
 })
-
+let playerBot = null
 // Announce Team to Geeko Bot (Geeko sets teams and provides starting inventory.)
 bot.once('login', function () {
     console.log(bot.username + "| Login")
-    const playerBot = new Player({bot, mcData, Vec3, ...wrapper})
+    playerBot = new Player({bot, mcData, Vec3, ...wrapper})
 
     console.log(bot.username + `| ${TEAM_PREFIX}${playerBot.team}${TEAM_SUFFIX}`)
-
     wrapper.sendChat(`${TEAM_PREFIX}${playerBot.team}${TEAM_SUFFIX}`)
     
-    let refreshId = setInterval(() => {
-      playerBot.loop({bot, mcData, Vec3, ...wrapper})
-    }, interval)
-
-    if(exit){
-      console.log(`${bot.username}|Clearing Interval - Quitting`)
-      clearInterval(refreshId);
-    }
-    
+    restartLoop()
 })
+
+
+const restartLoop = ()=>{
+  console.error('(Re)Starting Loop')
+  if(loop) clearInterval(loop)
+  
+  loop = setInterval(() => {
+    playerBot.loop({bot, mcData, Vec3, ...wrapper})
+  }, interval)
+}

@@ -99,10 +99,13 @@ module.exports = wrapper = (bot, mcData) => {
     const placeBlockAsync = promisifyMF(bot.placeBlock)
 
     try{
+      console.error('itemToPlace',itemToPlace)
       await equipAsync(itemToPlace, 'hand')
+      console.error('placing item')
       await placeBlockAsync(targetBlock, vec3(0, 1, 0))
       console.log(`${bot.username}|placed ${itemToPlace.name} at: ${targetBlock.position}`)
     } catch(e) {
+      console.error('inventory was ',bot.inventory.items())
       console.log(e)
       throw e
     }
