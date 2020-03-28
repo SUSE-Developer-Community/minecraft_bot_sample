@@ -69,7 +69,6 @@ bot.once('login', function () {
 
     wrapper.sendChat(`${TEAM_PREFIX}${playerBot.team}${TEAM_SUFFIX}`)
     
-
     let refreshId = setInterval(() => {
       playerBot.loop({bot, mcData, Vec3, ...wrapper})
     }, interval)
