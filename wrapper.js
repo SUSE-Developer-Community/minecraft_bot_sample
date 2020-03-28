@@ -126,7 +126,7 @@ module.exports = wrapper = (bot, mcData) => {
     // TODO: only follow if on the same team, or no team (admins)
     const target = bot.players[chatuser].entity
     if (target) {
-      bot.navigate.to(target.position)
+      bot.navigate.to(target.position, {tooFarThreshold: 10, timeout: 2000})
     }
     return target
   }

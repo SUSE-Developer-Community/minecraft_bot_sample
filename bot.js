@@ -46,6 +46,7 @@ module.exports = class MinecraftBot {
 
     onPathNotFound((closestPath) => {
       sendChat("unable to find path. getting as close as possible")
+      console.log("found path. getting as close as possible")
       walk(closestPath)
     })
 
@@ -92,7 +93,7 @@ module.exports = class MinecraftBot {
 
 
     if(this.state.followingSpeaker) {
-      if (distance(this.bot.entity.position, this.state.targetBlock.position) < this.wrapper.maxPlacementRange) {
+      if (distance(this.bot.entity.position, this.state.followingSpeaker.position) < this.wrapper.maxPlacementRange) {
         this.state.followingSpeaker = null//done following
       }
       return 
@@ -105,7 +106,7 @@ module.exports = class MinecraftBot {
 
       if(this.state.targetBlock) { // found target block
         console.log(`${this.bot.username}|Found new Target Block: ${this.state.targetBlock.displayName}@${this.state.targetBlock.position}`)
-        this.bot.navigate.to(this.state.targetBlock.position.offset(0, 1, 2)); //need to find offset on side of bot
+        this.bot.navigate.to(this.state.targetBlock.position.offset(0, 1, 2), {tooFarThreshold: 10, timeout: 2000}); //need to find offset on side of bot
       } else { // couldn't find targetBlock
         this.wander()
       }
@@ -131,7 +132,7 @@ module.exports = class MinecraftBot {
           console.log("I am stuck :( wandering and trying again")
           this.wander()
         } else if(distanceToTarget <= 1.5) {
-          this.bot.navigate.to(this.state.targetBlock.position.offset(0, 1, 2)); //need to find offset on side of bot
+          this.bot.navigate.to(this.state.targetBlock.position.offset(0, 1, 2), {tooFarThreshold: 10, timeout: 2000}); //need to find offset on side of bot
         }
       }
     }
@@ -143,8 +144,8 @@ module.exports = class MinecraftBot {
   wander() {
     const getRandom = (spread)=>(Math.random*spread*2)
 
-    const randomPlace = this.bot.entity.position.offset(getRandom(20),getRandom(20,0))
-    this.bot.navigate.to(randomPlace);
+    const randomPlace = this.bot.entity.position.offset(getRandom(5), getRandom(5), 0)
+    this.bot.navigate.to(randomPlace, {tooFarThreshold: 10, timeout: 2000});
   }
 
   getPlacementBlockForTarget(target) {

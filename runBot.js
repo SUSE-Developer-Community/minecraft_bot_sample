@@ -27,8 +27,8 @@ let bot = mineflayer.createBot({
     port,
     version: "1.12.2"
 })
-
 navigatePlugin(bot);
+
 const Player = require('./bot.js')
 const wrapper = require('./wrapper.js')(bot, mcData)
 
@@ -50,10 +50,6 @@ bot.on('connect',()=>{
 bot.on('end',()=>{
   console.error("Disconnected")
   process.exit(0)
-})
-
-bot.on('entityEquip',(entity)=>{
-  console.log("entityEquip", entity)
 })
 
 bot.on('respawn', () => {
@@ -98,6 +94,8 @@ const restartLoop = ()=>{
   if(loop) clearInterval(loop)
   
   loop = setInterval(() => {
-    playerBot.loop({bot, mcData, Vec3, ...wrapper})
+    console.log("Loop Start")
+    playerBot.loop({...wrapper})
+    console.log("Loop End")
   }, interval)
 }
